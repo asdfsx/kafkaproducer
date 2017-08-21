@@ -204,7 +204,7 @@ class KafkaProducer(object):
 def main():
     """main entry"""
     config_file = ""
-    if len(sys.argv) > 0:
+    if len(sys.argv) > 1:
         config_file = sys.argv[1]
     else:
         print "usage: python kafkaproducer.py <config-file>\n" \
