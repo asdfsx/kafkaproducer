@@ -1,0 +1,8 @@
+*.pyc
+*.seek
+*.log
+*.out
+*.pid
+.vscode
+*stdout
+*stderr
