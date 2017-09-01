@@ -4,6 +4,7 @@
 
 import ConfigParser
 import glob
+import json
 import logging
 import logging.config
 import os
@@ -93,13 +94,40 @@ def logreformat(log):
             ipstr = t[-1]
         else:
             ipstr = t[1]
-        t[0] = str(timeformat(t[0]))
-        t[1] = str(ipstr_2_int(ipstr))
-        t[3] = t[3].split(" ")[1]
-        return (None, "\t".join(t))
+
+        timestamp = str(timeformat(t[0]))
+        ipaddr = str(ipstr_2_int(ipstr))
+        url = t[3].split(" ")[1]
+        json_decode = t[4].decode("string_escape")
+
+        jsons = jsonflat(timestamp, ipaddr, url, json_decode)
+
+        return jsons
     except:
         logging.error("reformat failed:%s, reason:%s", log, traceback.format_exc())
-        return (None, None)
+        return None
+
+def jsonflat(timestamp, ipaddr, url, json_str):
+    """extract packData"""
+    result = []
+
+    json_obj = json.loads(json_str)
+
+    json_tmp = {"ts":timestamp,
+                "ipaddr":ipaddr,
+                "endpoint":url}
+
+    for key in json_obj:
+        if key != "packData":
+            json_tmp["key"] = json_obj[key]
+
+    if "packData" in json_obj:
+        for obj in json_obj["packData"]:
+            tmp = json_tmp.copy()
+            for key in obj:
+                tmp[key] = obj[key]
+            result.append(json.dumps(tmp))
+    return result
 
 class KafkaProducer(object):
     """log producer"""
@@ -175,15 +203,16 @@ class KafkaProducer(object):
                             istream.seek(seekposition)
 
                         for line in istream:
-                            (partition_key, newline) = logreformat(line)
-                            if newline is None:
+                            jsons = logreformat(line)
+                            if jsons is None or not jsons:
                                 continue
                             else:
-                                self.kafka_producer_obj.send(topic,
-                                                             value=newline,
-                                                             key=partition_key,)
+                                for json in jsons:
+                                    self.kafka_producer_obj.send(topic,
+                                                                 value=json,
+                                                                 key=None,)
                                 self.counter += 1
-                        
+
                         position = istream.tell()
                         ostream = open(seekfile, "w")
                         ostream.write("%d" % position)
