@@ -119,7 +119,7 @@ def jsonflat(timestamp, ipaddr, url, json_str):
 
     for key in json_obj:
         if key != "packData":
-            json_tmp["key"] = json_obj[key]
+            json_tmp[key] = json_obj[key]
 
     if "packData" in json_obj:
         for obj in json_obj["packData"]:
