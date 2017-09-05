@@ -12,6 +12,7 @@ import signal
 import sys
 import time
 import traceback
+import urlparse
 
 import kafka
 
@@ -98,7 +99,8 @@ def logreformat(log):
         timestamp = str(timeformat(t[0]))
         ipaddr = str(ipstr_2_int(ipstr))
         url = t[3].split(" ")[1]
-        json_decode = t[4].decode("string_escape")
+        # json_decode = t[4].decode("string_escape")
+        json_decode = urlparse.unquote(t[4])
 
         jsons = jsonflat(timestamp, ipaddr, url, json_decode)
 
