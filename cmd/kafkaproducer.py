@@ -96,8 +96,8 @@ def logreformat(log):
         else:
             ipstr = t[1]
 
-        timestamp = str(timeformat(t[0]))
-        ipaddr = str(ipstr_2_int(ipstr))
+        timestamp = timeformat(t[0])
+        ipaddr = ipstr_2_int(ipstr)
         url = t[3].split(" ")[1]
         # json_decode = t[4].decode("string_escape")
         json_decode = urlparse.unquote(t[4])
