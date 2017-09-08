@@ -120,14 +120,18 @@ def jsonflat(timestamp, ipaddr, url, json_str):
                 "endpoint":url}
 
     for key in json_obj:
-        if key != "packData":
+        if key != "packData" or key != "eventParas":
             json_tmp[key] = json_obj[key]
 
     if "packData" in json_obj:
         for obj in json_obj["packData"]:
             tmp = json_tmp.copy()
             for key in obj:
-                tmp[key] = obj[key]
+                if key == "eventParas":
+                    for key_k in obj[key]:
+                        tmp[key_k] = obj[key][key_k]
+                else:
+                    tmp[key] = obj[key]
             result.append(json.dumps(tmp))
     return result
 
