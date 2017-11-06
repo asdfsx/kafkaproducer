@@ -89,9 +89,10 @@ def logreformat(log):
     try:
         t = log.strip().split("\t")
         ipstr = ""
-        if t[3] == "-":
+        if t[3] == "-" or "ELB-HealthChecker" in t[-1]:
             return (-1, None)
-        if t[1] == "-" or t[1].startswith("192.168"):
+
+        if t[1] == "-" or t[1].startswith("192.168") or t[1].startswith("10.0.0"):
             ipstr = t[-1]
         else:
             ipstr = t[1]
