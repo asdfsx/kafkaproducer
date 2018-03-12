@@ -116,12 +116,6 @@ def jsonflat(timestamp, ipaddr, url, json_str):
 
     json_obj = json.loads(json_str)
 
-    if "packType" in json_obj and json_obj["packType"] == "wechat":
-        json_obj["ts"] = timestamp
-        json_obj["ipaddr"] = ipaddr
-        json_obj["endpoint"] = url
-        return [json.dumps(json_obj)]
-
     json_tmp = {"ts":timestamp,
                 "ipaddr":ipaddr,
                 "endpoint":url}
