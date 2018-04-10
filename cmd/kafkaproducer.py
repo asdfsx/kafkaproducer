@@ -32,6 +32,7 @@ def read_config(config_file):
     result["producerid"] = cf_obj.get("kafkaproducer", "producerid")
     result["nginxlog"] = cf_obj.get("kafkaproducer", "nginxlog")
     result["batchsize"] = cf_obj.getint("kafkaproducer", "batchsize")
+    result["reconnect_interval"] = cf_obj.getint("kafkaproducer", "reconnect_interval")
 
     tmp = result["nginxlog"].split(",")
     result["topic_ngxlog"] = {}
@@ -152,6 +153,8 @@ class KafkaProducer(object):
         self.nginxlog = config["nginxlog"]
         self.batchsize = config["batchsize"]
         self.topic_ngxlog = config["topic_ngxlog"]
+        self.reconnect_interval = config["reconnect_interval"]
+        self.kafka_connect_time = int(time.time())
 
     def signal_handler(self, signum, frame):
         """handle signals"""
@@ -162,7 +165,14 @@ class KafkaProducer(object):
         """run process"""
         while True:
             try:
+                current_second = int(time.time())
                 if self.kafka_producer_obj is None:
+                    self.kafka_producer_obj = kafka.KafkaProducer(bootstrap_servers=self.kafkaservers,
+                                                                  client_id=self.producerid,
+                                                                  batch_size=self.batchsize,)
+                else current_second - self.kafka_connect_time > self.reconnect_interval:
+                    self.kafka_producer_obj.close()
+                    self.kafka_producer_obj = None
                     self.kafka_producer_obj = kafka.KafkaProducer(bootstrap_servers=self.kafkaservers,
                                                                   client_id=self.producerid,
                                                                   batch_size=self.batchsize,)
@@ -222,13 +232,15 @@ class KafkaProducer(object):
                         ostream.close()
                         istream.close()
 
-                if self.quit_flag:
-                    self.kafka_producer_obj.flush()
-                    return
+                self.kafka_producer_obj.flush()
+                # if self.quit_flag:
+                #     self.kafka_producer_obj.flush()
+                #     return
             except kafka.errors.KafkaError:
                 print traceback.format_exc()
                 logging.error(traceback.format_exc())
-                raise
+                self.kafka_producer_obj.close
+                self.kafka_producer_obj = None
             except:
                 print traceback.format_exc()
                 logging.error(traceback.format_exc())
