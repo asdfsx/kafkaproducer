@@ -170,7 +170,7 @@ class KafkaProducer(object):
                     self.kafka_producer_obj = kafka.KafkaProducer(bootstrap_servers=self.kafkaservers,
                                                                   client_id=self.producerid,
                                                                   batch_size=self.batchsize,)
-                else current_second - self.kafka_connect_time > self.reconnect_interval:
+                elif current_second - self.kafka_connect_time > self.reconnect_interval:
                     self.kafka_producer_obj.close()
                     self.kafka_producer_obj = None
                     self.kafka_producer_obj = kafka.KafkaProducer(bootstrap_servers=self.kafkaservers,
